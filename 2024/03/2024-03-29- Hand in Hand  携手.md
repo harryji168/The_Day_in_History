@@ -34,18 +34,19 @@ provide some famous quotes that are relevant to  the image, 英国, Viola Concer
  
  Hand in Hand  携手
  
-We can make this world a better place
-If we work together, hand in hand
-We can build a bridge between the past and the future
-And create a world that's more just and fairer
+ Luck is what happens when preparation meets opportunity.
 
-Let's let go of the past and embrace the future
-Let's open our hearts and minds to new possibilities
-Let's create a world where everyone is lucky, healthy, and happy
+ In a sky where stars and dreams entwine,
+Harmony dances in night divine.
+Notes from a clarinet rise and soar,
+Mozart's whispers open doors.
 
-The future belongs to those who believe in the beauty of their dreams.
+Telescopes gaze into depths unseen,
+Galaxies twirl, a celestial queen.
+IKEA lessons craft the space,
+A to-do list conquered with grace.
 
-We can make this world a better place
-If we work together, hand in hand
-We can build a bridge between the past and the future
-And create a world that's more just and fairer
+Luck’s four leaves in the gentle breeze,
+Health and joy, the world at ease.
+A symphony of life, a canvas vast,
+In each small moment, the infinite cast.
