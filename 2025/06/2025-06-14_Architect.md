@@ -1,4 +1,4 @@
-第3936天,Architect,  Google 发布 Android 16 与 Apple 推出 iOS/iPadOS/macOS “Liquid Glass” 设计
+第3937天,Architect,  Google 发布 Android 16 与 Apple 推出 iOS/iPadOS/macOS “Liquid Glass” 设计
 
 Google 已正式推出 Android 16，新增实时更新锁屏功能、增强电池健康与隐私保护能力，同时改善无障碍体验 
 news.filehippo.com
