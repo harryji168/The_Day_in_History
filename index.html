@@ -451,8 +451,8 @@
                 <div class="settings-grid">
                     <div class="form-group">
                         <label>URL Pattern</label>
-                        <input type="text" id="urlPattern" value="./day-{n}/index.html">
-                        <p class="help-text">Use {n} for day number</p>
+                        <input type="text" id="urlPattern" value="./{year}/{month}/{year}-{month}-{day}/index.html">
+                        <p class="help-text">Use {year}, {month}, {day} for date parts</p>
                     </div>
                     <div class="form-group">
                         <label>Start Date</label>
@@ -473,13 +473,14 @@
     <script>
         const state = {
             config: {
-                urlPattern: './day-{n}/index.html',
+                urlPattern: './{year}/{month}/{year}-{month}-{day}/index.html',
                 startDate: new Date()
             },
             loadedDays: new Set(),
             observer: null,
             renderedMonths: new Set(),
-            isLoading: false
+            isLoading: false,
+            scrollTimeout: null
         };
 
         const monthNames = ["January", "February", "March", "April", "May", "June",
@@ -535,8 +536,14 @@
             return dayDate >= currentWeekStart && dayDate <= currentWeekEnd;
         }
 
-        function getDayUrl(day) {
-            return state.config.urlPattern.replace('{n}', day);
+        function getDayUrl(day, month, year) {
+            const monthStr = String(month + 1).padStart(2, '0');
+            const dayStr = String(day).padStart(2, '0');
+            
+            return state.config.urlPattern
+                .replace(/{year}/g, year)
+                .replace(/{month}/g, monthStr)
+                .replace(/{day}/g, dayStr);
         }
 
         function createDayCell(day, month, year, shouldLoadPreview) {
@@ -548,11 +555,11 @@
                 return cell;
             }
 
-            const dayUrl = getDayUrl(day);
+            const dayUrl = getDayUrl(day, month, year);
             const todayClass = isToday(day, month, year) ? ' today' : '';
 
             cell.innerHTML = `
-                <div class="day-card${todayClass}" data-day="${day}" data-url="${dayUrl}" data-load-preview="${shouldLoadPreview}">
+                <div class="day-card${todayClass}" data-day="${day}" data-month="${month}" data-year="${year}" data-url="${dayUrl}" data-load-preview="${shouldLoadPreview}">
                     <div class="day-header">
                         <span class="day-number">${day}</span>
                     </div>
@@ -618,8 +625,12 @@
                     if (entry.isIntersecting) {
                         const card = entry.target;
                         const shouldLoadPreview = card.getAttribute('data-load-preview') === 'true';
-                        if (shouldLoadPreview) {
-                            loadIframe(card);
+                        if (shouldLoadPreview && !state.isLoading) {
+                            // Delay loading until scrolling stops
+                            clearTimeout(state.scrollTimeout);
+                            state.scrollTimeout = setTimeout(() => {
+                                loadIframe(card);
+                            }, 150);
                         }
                     }
                 });
