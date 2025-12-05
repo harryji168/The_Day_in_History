@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>International Cheetah Day - Interactive 3D Experience</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --teal-dark: #003d33;
+            --teal-main: #00695c;
+            --teal-light: #4db6ac;
+            --gold: #c5a059;
+            --vintage-bg: #e8f5e9;
+            --text-dark: #1a1a1a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Playfair Display', serif;
+            background-color: var(--vintage-bg);
+            color: var(--text-dark);
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* --- LAYER 1: VINTAGE POSTER BACKGROUND --- */
+        .poster-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            background: 
+                radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.1) 100%),
+                url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZThmNWU5Ii8+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNjOGU2YzkiLz4KPC9zdmc+');
+            padding: 2rem;
+            border: 20px solid var(--teal-dark);
+            outline: 5px solid var(--gold);
+            outline-offset: -10px;
+        }
+
+        .poster-header {
+            text-align: center;
+            border-bottom: 2px solid var(--gold);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .poster-header h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 3rem;
+            color: var(--teal-dark);
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            text-shadow: 2px 2px 0px rgba(197, 160, 89, 0.3);
+        }
+
+        .poster-header h2 {
+            font-size: 1.5rem;
+            color: var(--teal-main);
+            font-style: italic;
+        }
+
+        .poster-content {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 1fr;
+            gap: 2rem;
+            position: relative;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .column {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid var(--gold);
+            border-radius: 4px;
+            backdrop-filter: blur(2px);
+        }
+
+        .column h3 {
+            font-family: 'Cinzel', serif;
+            color: var(--teal-dark);
+            border-bottom: 1px solid var(--teal-light);
+            margin-bottom: 1rem;
+        }
+
+        .column p {
+            font-family: 'Lato', sans-serif;
+            line-height: 1.6;
+            font-size: 0.95rem;
+            text-align: justify;
+        }
+
+        .center-art {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 4px double var(--gold);
+            background: rgba(0, 61, 51, 0.1);
+            position: relative;
+        }
+
+        .jupiter-symbol {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 5px solid var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            color: var(--teal-dark);
+            background: rgba(255,255,255,0.5);
+            box-shadow: 0 0 20px rgba(197, 160, 89, 0.5);
+        }
+
+        .medallion {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: var(--gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+            z-index: 5;
+        }
+        .medallion.tl { top: 10px; left: 10px; }
+        .medallion.tr { top: 10px; right: 10px; }
+        .medallion.bl { bottom: 10px; left: 10px; }
+        .medallion.br { bottom: 10px; right: 10px; }
+
+        .poster-footer {
+            text-align: center;
+            padding-top: 1rem;
+            border-top: 2px solid var(--gold);
+            font-family: 'Cinzel', serif;
+            color: var(--teal-dark);
+            font-size: 0.9rem;
+        }
+
+        /* --- LAYER 2: 3D CANVAS OVERLAY --- */
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: auto; /* Allow interaction with 3D scene */
+        }
+
+        /* --- LAYER 3: UI OVERLAYS --- */
+        .ui-panel {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(77, 182, 172, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 20;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.9rem;
+            pointer-events: none; /* Let clicks pass through unless it's a button */
+        }
+
+        #gesture-status {
+            top: 20px;
+            left: 20px;
+            width: 220px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .status-val { color: var(--teal-light); font-weight: bold; }
+
+        #video-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 160px;
+            height: 120px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 20;
+            border: 2px solid var(--gold);
+            opacity: 0.8;
+        }
+
+        #input_video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        #controls-panel {
+            bottom: 20px;
+            right: 20px;
+            pointer-events: auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background: var(--teal-main);
+            color: white;
+            border: 1px solid var(--gold);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: var(--teal-light);
+            box-shadow: 0 0 10px var(--teal-light);
+        }
+
+        #info-panel {
+            bottom: 20px;
+            left: 20px;
+            max-width: 300px;
+        }
+
+        .gesture-guide {
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        .gesture-icon { margin-right: 5px; }
+
+        /* Loading Overlay */
+        #loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,61,51,0.95);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--teal-light);
+            border-top: 5px solid var(--gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .poster-content {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+                overflow-y: auto;
+            }
+            .poster-header h1 { font-size: 1.8rem; }
+            .jupiter-symbol { width: 120px; height: 120px; font-size: 3rem; }
+            #video-container { width: 100px; height: 75px; }
+            .column { margin-bottom: 10px; }
+        }
+    </style>
+    
+    <!-- Import Maps for Modules -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+                "@mediapipe/tasks-vision": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/+esm"
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <!-- Loading Screen -->
+    <div id="loading">
+        <div class="spinner"></div>
+        <h2>Initializing Experience...</h2>
+        <p>Loading 3D Models & AI Vision</p>
+    </div>
+
+    <!-- Layer 1: Vintage Poster -->
+    <div class="poster-background">
+        <div class="medallion tl">🐆</div>
+        <div class="medallion tr">🧬</div>
+        <div class="medallion bl">🏛️</div>
+        <div class="medallion br">🎵</div>
+
+        <div class="poster-header">
+            <h1>International Cheetah Day</h1>
+            <h2>国际猎豹日 &bull; December 4th</h2>
+        </div>
+
+        <div class="poster-content">
+            <div class="column">
+                <h3>The Speed of Nature</h3>
+                <p>The cheetah (Acinonyx jubatus) is a large cat native to Africa and central Iran. It is the fastest land animal, capable of running at 80 to 128 km/h (50 to 80 mph). Its specialized body is built for speed, featuring a deep chest, spotted coat, small rounded head, black tear-like streaks on the face, long thin legs, and a long spotted tail.</p>
+                <br>
+                <p><strong>Conservation Status:</strong> Vulnerable. The population is decreasing due to habitat loss and conflict with humans.</p>
+            </div>
+
+            <div class="column center-art">
+                <div class="jupiter-symbol">♃</div>
+                <h3 style="margin-top: 20px; color: var(--gold);">JUPITER</h3>
+                <p style="text-align: center; font-style: italic;">God of Sky and Thunder</p>
+                <div style="margin-top: auto; font-size: 0.8rem; text-align: center;">
+                    "Speed is the essence of war."
+                </div>
+            </div>
+
+            <div class="column">
+                <h3>Music & History</h3>
+                <p>Throughout history, cheetahs have been revered for their hunting prowess. In ancient Egypt, they were kept as pets and symbols of royalty. The "Hunting Leopard" was a companion to pharaohs.</p>
+                <br>
+                <h3>The Future</h3>
+                <p>Modern science studies the cheetah's unique genetics. With low genetic diversity, conservation efforts utilize advanced DNA mapping to ensure the survival of the species.</p>
+            </div>
+        </div>
+
+        <div class="poster-footer">
+            <p>Celebrating the intersection of Nature, History, and Technology.</p>
+        </div>
+    </div>
+
+    <!-- Layer 2: 3D Scene -->
+    <div id="canvas-container"></div>
+
+    <!-- Layer 3: UI & Controls -->
+    <div id="gesture-status" class="ui-panel">
+        <div class="status-item"><span>System:</span> <span id="sys-status" class="status-val">Active</span></div>
+        <div class="status-item"><span>Gesture:</span> <span id="gesture-name" class="status-val">None</span></div>
+        <div class="status-item"><span>Model:</span> <span id="model-name" class="status-val">Cheetah</span></div>
+        <div class="gesture-guide">
+            <div>👌 Pinch: Rotate Model</div>
+            <div>✊ Fist: Zoom Camera</div>
+            <div>✌️ Peace: Switch Model</div>
+            <div>🖐️ Open: Reset View</div>
+        </div>
+    </div>
+
+    <div id="video-container">
+        <video id="input_video" autoplay playsinline muted></video>
+    </div>
+
+    <div id="info-panel" class="ui-panel">
+        <strong>Interactive Mode</strong><br>
+        Use hand gestures or mouse to interact with the 3D elements floating above the poster.
+    </div>
+
+    <div id="controls-panel" class="ui-panel" style="background: transparent; border: none; padding: 0;">
+        <button id="toggle-cam">Stop Camera</button>
+    </div>
+
+    <!-- Logic -->
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { FilesetResolver, GestureRecognizer } from '@mediapipe/tasks-vision';
+
+        // --- Configuration ---
+        const container = document.getElementById('canvas-container');
+        const videoElement = document.getElementById('input_video');
+        const gestureOutput = document.getElementById('gesture-name');
+        const modelOutput = document.getElementById('model-name');
+        const loadingScreen = document.getElementById('loading');
+        
+        // --- THREE.js Setup ---
+        const scene = new THREE.Scene();
+        // No background color -> Transparent
+        
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 2, 12);
+
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // --- Lighting ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffd700, 1.5); // Gold light
+        dirLight.position.set(5, 5, 5);
+        scene.add(dirLight);
+
+        const pointLight = new THREE.PointLight(0x4db6ac, 2, 20); // Teal neon
+        pointLight.position.set(0, 2, 2);
+        scene.add(pointLight);
+
+        // --- Models ---
+        const models = [];
+        let currentModelIndex = 0;
+
+        // 1. Procedural Cheetah (Robot/Wireframe Style)
+        function createCheetah() {
+            const group = new THREE.Group();
+            
+            // Materials
+            const bodyMat = new THREE.MeshStandardMaterial({ 
+                color: 0xffaa00, 
+                roughness: 0.4, 
+                metalness: 0.6,
+                transparent: true,
+                opacity: 0.9
+            });
+
+            // Procedural Spots Texture
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffaa00';
+            ctx.fillRect(0,0,256,256);
+            ctx.fillStyle = '#000000';
+            for(let i=0; i<50; i++) {
+                const x = Math.random() * 256;
+                const y = Math.random() * 256;
+                const r = Math.random() * 10 + 2;
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI*2);
+                ctx.fill();
+            }
+            const texture = new THREE.CanvasTexture(canvas);
+            bodyMat.map = texture;
+
+            // Body
+            const bodyGeo = new THREE.CylinderGeometry(0.5, 0.7, 3, 12);
+            bodyGeo.rotateZ(Math.PI / 2);
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            group.add(body);
+
+            // Head
+            const headGeo = new THREE.SphereGeometry(0.5, 16, 16);
+            const head = new THREE.Mesh(headGeo, bodyMat);
+            head.position.set(2, 0.8, 0);
+            group.add(head);
+
+            // Legs (Simplified)
+            const legGeo = new THREE.CylinderGeometry(0.15, 0.1, 1.5, 8);
+            const legs = [];
+            
+            // FL, FR, BL, BR
+            const positions = [[1.2, -0.5, 0.4], [1.2, -0.5, -0.4], [-1.2, -0.5, 0.4], [-1.2, -0.5, -0.4]];
+            
+            positions.forEach((pos, i) => {
+                const legGroup = new THREE.Group();
+                legGroup.position.set(pos[0], pos[1], pos[2]);
+                
+                const upperLeg = new THREE.Mesh(legGeo, bodyMat);
+                upperLeg.position.y = -0.75;
+                legGroup.add(upperLeg);
+                
+                group.add(legGroup);
+                legs.push(legGroup);
+            });
+
+            // Tail
+            const tailGeo = new THREE.CylinderGeometry(0.1, 0.05, 2, 8);
+            tailGeo.rotateZ(Math.PI / 1.5);
+            const tail = new THREE.Mesh(tailGeo, bodyMat);
+            tail.position.set(-2, 0.5, 0);
+            group.add(tail);
+
+            group.userData = { 
+                type: 'cheetah', 
+                legs: legs, 
+                body: body,
+                tail: tail,
+                speed: 10 
+            };
+            return group;
+        }
+
+        // 2. DNA Helix
+        function createDNA() {
+            const group = new THREE.Group();
+            const count = 40;
+            const radius = 1.5;
+            const height = 6;
+            
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true });
+            const connectorMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
+
+            for (let i = 0; i < count; i++) {
+                const t = i / count;
+                const angle = t * Math.PI * 8;
+                const y = (t - 0.5) * height;
+
+                const x1 = Math.cos(angle) * radius;
+                const z1 = Math.sin(angle) * radius;
+                const x2 = Math.cos(angle + Math.PI) * radius;
+                const z2 = Math.sin(angle + Math.PI) * radius;
+
+                const sphereGeo = new THREE.SphereGeometry(0.15, 8, 8);
+                const s1 = new THREE.Mesh(sphereGeo, material);
+                s1.position.set(x1, y, z1);
+                
+                const s2 = new THREE.Mesh(sphereGeo, material);
+                s2.position.set(x2, y, z2);
+
+                // Connector
+                const lineGeo = new THREE.CylinderGeometry(0.05, 0.05, radius*2, 4);
+                lineGeo.rotateZ(Math.PI / 2);
+                lineGeo.rotateY(angle);
+                const line = new THREE.Mesh(lineGeo, connectorMat);
+                line.position.set(0, y, 0);
+
+                group.add(s1);
+                group.add(s2);
+                group.add(line);
+            }
+
+            group.userData = { type: 'dna', speed: 0.01 };
+            group.visible = false;
+            return group;
+        }
+
+        // 3. Tech Bust
+        function createBust() {
+            const group = new THREE.Group();
+            
+            const mat = new THREE.MeshBasicMaterial({ 
+                color: 0x00ff00, 
+                wireframe: true,
+                transparent: true,
+                opacity: 0.6
+            });
+
+            const headGeo = new THREE.IcosahedronGeometry(1.5, 1);
+            const head = new THREE.Mesh(headGeo, mat);
+            
+            // Core glow
+            const coreGeo = new THREE.SphereGeometry(0.8, 16, 16);
+            const coreMat = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.3 });
+            const core = new THREE.Mesh(coreGeo, coreMat);
+
+            // Rings
+            const ringGeo = new THREE.TorusGeometry(2, 0.05, 8, 50);
+            const ring1 = new THREE.Mesh(ringGeo, mat);
+            ring1.rotation.x = Math.PI / 2;
+            
+            const ring2 = new THREE.Mesh(ringGeo, mat);
+            ring2.rotation.y = Math.PI / 2;
+
+            group.add(head);
+            group.add(core);
+            group.add(ring1);
+            group.add(ring2);
+
+            group.userData = { type: 'bust', core: core };
+            group.visible = false;
+            return group;
+        }
+
+        const cheetahModel = createCheetah();
+        const dnaModel = createDNA();
+        const bustModel = createBust();
+
+        scene.add(cheetahModel);
+        scene.add(dnaModel);
+        scene.add(bustModel);
+
+        models.push(cheetahModel, dnaModel, bustModel);
+
+        // --- Animation Loop ---
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const time = clock.getElapsedTime();
+            const delta = clock.getDelta();
+
+            // Animate Active Model
+            const active = models[currentModelIndex];
+            
+            if (active.userData.type === 'cheetah') {
+                // Galloping motion
+                const speed = 10;
+                // Spine flexion
+                active.children[0].position.y = Math.sin(time * speed) * 0.2;
+                
+                // Legs
+                active.userData.legs.forEach((leg, i) => {
+                    const offset = (i < 2) ? 0 : Math.PI; // Front vs Back
+                    const cycle = Math.sin(time * speed + offset);
+                    leg.rotation.z = cycle * 0.8;
+                    // Knee bend simulation
+                    leg.children[0].position.y = -0.75 + Math.abs(Math.sin(time * speed + offset + Math.PI/2)) * 0.3;
+                });
+
+                // Tail
+                active.userData.tail.rotation.z = Math.sin(time * speed) * 0.5;
+            }
+            else if (active.userData.type === 'dna') {
+                active.rotation.y += 0.01;
+                active.rotation.z = Math.sin(time * 0.5) * 0.2;
+            }
+            else if (active.userData.type === 'bust') {
+                active.rotation.y += 0.005;
+                active.userData.core.scale.setScalar(1 + Math.sin(time * 3) * 0.2);
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // --- MediaPipe Gesture Control ---
+        let gestureRecognizer;
+        let runningMode = "VIDEO";
+        let webcamRunning = true;
+        let lastVideoTime = -1;
+
+        async function createGestureRecognizer() {
+            const vision = await FilesetResolver.forVisionTasks(
+                "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+            );
+            gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
+                baseOptions: {
+                    modelAssetPath:
+                        "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
+                    delegate: "GPU"
+                },
+                runningMode: runningMode,
+                numHands: 1
+            });
+            loadingScreen.style.display = 'none';
+            animate(); // Start 3D loop after load
+            predictWebcam(); // Start Vision loop
+        }
+
+        // Webcam Setup
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+                videoElement.srcObject = stream;
+                videoElement.addEventListener("loadeddata", createGestureRecognizer);
+            });
+        }
+
+        let lastGesture = "";
+        let gestureDebounce = 0;
+
+        async function predictWebcam() {
+            if (runningMode === "IMAGE") {
+                runningMode = "VIDEO";
+                await gestureRecognizer.setOptions({ runningMode: "VIDEO" });
+            }
+            
+            if (videoElement.currentTime !== lastVideoTime) {
+                lastVideoTime = videoElement.currentTime;
+                if (gestureRecognizer) {
+                    const results = gestureRecognizer.recognizeForVideo(videoElement, Date.now());
+                    
+                    if (results.gestures.length > 0) {
+                        const categoryName = results.gestures[0][0].categoryName;
+                        const score = results.gestures[0][0].score;
+                        
+                        if (score > 0.5) {
+                            handleGesture(categoryName);
+                            gestureOutput.innerText = categoryName;
+                        }
+                    } else {
+                        gestureOutput.innerText = "None";
+                    }
+                }
+            }
+            if (webcamRunning) {
+                window.requestAnimationFrame(predictWebcam);
+            }
+        }
+
+        function handleGesture(gesture) {
+            const now = Date.now();
+            if (now - gestureDebounce < 500) return; // Simple debounce
+
+            const activeModel = models[currentModelIndex];
+
+            switch(gesture) {
+                case "Victory": // Peace Sign -> Switch Model
+                    switchModel();
+                    gestureDebounce = now;
+                    break;
+                
+                case "Closed_Fist": // Fist -> Zoom In
+                    camera.position.z = Math.max(5, camera.position.z - 0.2);
+                    break;
+
+                case "Open_Palm": // Open Hand -> Reset/Zoom Out
+                    camera.position.set(0, 2, 12);
+                    activeModel.rotation.set(0,0,0);
+                    gestureDebounce = now;
+                    break;
+
+                case "Thumb_Up": // Rotate Right
+                case "Pointing_Up": // Rotate
+                    activeModel.rotation.y += 0.1;
+                    break;
+            }
+        }
+
+        function switchModel() {
+            models[currentModelIndex].visible = false;
+            currentModelIndex = (currentModelIndex + 1) % models.length;
+            models[currentModelIndex].visible = true;
+            
+            const names = ["Cheetah", "DNA Helix", "Tech Bust"];
+            modelOutput.innerText = names[currentModelIndex];
+        }
+
+        // --- Mouse Interaction (Raycaster) ---
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+
+        window.addEventListener('mousedown', () => { isDragging = true; });
+        window.addEventListener('mouseup', () => { isDragging = false; });
+
+        window.addEventListener('mousemove', (event) => {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            if (isDragging) {
+                const deltaMove = {
+                    x: event.offsetX - previousMousePosition.x,
+                    y: event.offsetY - previousMousePosition.y
+                };
+
+                // If dragging on the model, rotate it manually
+                const activeModel = models[currentModelIndex];
+                // Simple rotation based on drag
+                if(event.buttons === 1) { // Left click
+                   // Let OrbitControls handle camera, but we can add specific model rotation logic if we wanted
+                   // For now, OrbitControls handles the "Drag empty space" requirement naturally.
+                   // To rotate object specifically, we'd need to check intersection.
+                }
+            }
+            previousMousePosition = { x: event.offsetX, y: event.offsetY };
+        });
+
+        // Click to rotate model specifically (Raycasting)
+        window.addEventListener('click', (event) => {
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(models[currentModelIndex].children, true);
+            
+            if (intersects.length > 0) {
+                // Spin effect on click
+                const active = models[currentModelIndex];
+                active.rotation.y += Math.PI / 2;
+            }
+        });
+
+        // Resize Handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Toggle Camera
+        document.getElementById('toggle-cam').addEventListener('click', () => {
+            webcamRunning = !webcamRunning;
+            const btn = document.getElementById('toggle-cam');
+            if(webcamRunning) {
+                predictWebcam();
+                btn.innerText = "Stop Camera";
+                videoElement.style.opacity = 1;
+            } else {
+                btn.innerText = "Start Camera";
+                videoElement.style.opacity = 0.2;
+                gestureOutput.innerText = "Paused";
+            }
+        });
+
+    </script>
+</body>
+</html>

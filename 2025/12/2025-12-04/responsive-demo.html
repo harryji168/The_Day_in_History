@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Design Demo - All Breakpoints</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #00ff44;
+            font-size: 2.5rem;
+            text-shadow: 0 0 20px rgba(0, 255, 68, 0.5);
+        }
+
+        .subtitle {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #00aaff;
+            font-size: 1.2rem;
+        }
+
+        .demo-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .breakpoint-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #00aaff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .breakpoint-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 170, 255, 0.3);
+            border-color: #00ff44;
+        }
+
+        .breakpoint-title {
+            font-size: 1.5rem;
+            color: #00ff44;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .breakpoint-title .icon {
+            font-size: 2rem;
+        }
+
+        .breakpoint-width {
+            color: #00aaff;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .preview-frame {
+            background: #0a0a0a;
+            border: 3px solid #333;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .preview-content {
+            padding: 15px;
+            min-height: 200px;
+            background: url('data:image/svg+xml,<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10" fill="%23111"/><rect x="10" y="10" width="10" height="10" fill="%23111"/></svg>');
+        }
+
+        .ui-element {
+            background: rgba(0, 170, 255, 0.2);
+            border: 1px solid #00aaff;
+            border-radius: 5px;
+            padding: 8px;
+            margin: 5px 0;
+            font-size: 0.85rem;
+            color: #00aaff;
+        }
+
+        .ui-element.gesture-panel {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00aaff;
+            padding: 10px;
+        }
+
+        .ui-element.video-feed {
+            background: rgba(0, 255, 68, 0.2);
+            border: 2px solid #00ff44;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .ui-element.hidden {
+            opacity: 0.3;
+            text-decoration: line-through;
+        }
+
+        .features-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .features-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ccc;
+        }
+
+        .features-list li:before {
+            content: "✓ ";
+            color: #00ff44;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .test-button {
+            background: linear-gradient(135deg, #00aaff, #0088cc);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 170, 255, 0.3);
+        }
+
+        .test-button:hover {
+            background: linear-gradient(135deg, #00ff44, #00cc33);
+            box-shadow: 0 6px 20px rgba(0, 255, 68, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .layout-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin: 10px 0;
+        }
+
+        .layout-row {
+            display: flex;
+            gap: 5px;
+        }
+
+        .layout-box {
+            background: rgba(0, 170, 255, 0.3);
+            border: 1px solid #00aaff;
+            border-radius: 3px;
+            padding: 5px;
+            font-size: 0.7rem;
+            text-align: center;
+            flex: 1;
+        }
+
+        .layout-box.gesture {
+            background: rgba(0, 170, 255, 0.5);
+        }
+
+        .layout-box.video {
+            background: rgba(0, 255, 68, 0.5);
+        }
+
+        .layout-box.info {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .demo-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🎨 Responsive Design Demonstration</h1>
+    <p class="subtitle">Interactive 3D Scene - All Breakpoints Visualized</p>
+
+    <div class="demo-container">
+        <!-- Desktop -->
+        <div class="breakpoint-card">
+            <div class="breakpoint-title">
+                <span class="icon">🖥️</span>
+                Desktop
+            </div>
+            <div class="breakpoint-width">> 1400px</div>
+
+            <div class="preview-frame">
+                <div class="preview-content">
+                    <div class="layout-preview">
+                        <div class="layout-row">
+                            <div class="layout-box gesture">Gesture Panel<br>250px</div>
+                            <div class="layout-box" style="flex: 2"></div>
+                            <div class="layout-box video">Video<br>320x240</div>
+                        </div>
+                        <div class="layout-row" style="height: 100px">
+                            <div class="layout-box" style="flex: 1">3D Scene</div>
+                        </div>
+                        <div class="layout-row">
+                            <div class="layout-box info">Info</div>
+                            <div class="layout-box" style="flex: 2"></div>
+                            <div class="layout-box">Controls</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="features-list">
+                <li>Full-size UI elements</li>
+                <li>Gesture status: 16px font, 250px width</li>
+                <li>Video canvas: 320x240px</li>
+                <li>All controls visible</li>
+                <li>Optimal spacing</li>
+            </ul>
+
+            <button class="test-button" onclick="openAtWidth(1920)">Test Desktop View</button>
+        </div>
+
+        <!-- Large Tablet -->
+        <div class="breakpoint-card">
+            <div class="breakpoint-title">
+                <span class="icon">💻</span>
+                Large Tablet
+            </div>
+            <div class="breakpoint-width">≤ 1400px</div>
+
+            <div class="preview-frame">
+                <div class="preview-content">
+                    <div class="layout-preview">
+                        <div class="layout-row">
+                            <div class="layout-box gesture">Gesture<br>220px</div>
+                            <div class="layout-box" style="flex: 2"></div>
+                            <div class="layout-box video">Video<br>280x210</div>
+                        </div>
+                        <div class="layout-row" style="height: 90px">
+                            <div class="layout-box">3D Scene</div>
+                        </div>
+                        <div class="layout-row">
+                            <div class="layout-box info">Info</div>
+                            <div class="layout-box" style="flex: 2"></div>
+                            <div class="layout-box">Controls</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="features-list">
+                <li>Slightly smaller UI</li>
+                <li>Gesture status: 14px font, 220px width</li>
+                <li>Video canvas: 280x210px</li>
+                <li>Maintained layout structure</li>
+            </ul>
+
+            <button class="test-button" onclick="openAtWidth(1400)">Test Large Tablet View</button>
+        </div>
+
+        <!-- Tablet -->
+        <div class="breakpoint-card">
+            <div class="breakpoint-title">
+                <span class="icon">📱</span>
+                Tablet
+            </div>
+            <div class="breakpoint-width">≤ 1024px</div>
+
+            <div class="preview-frame">
+                <div class="preview-content">
+                    <div class="layout-preview">
+                        <div class="layout-row">
+                            <div class="layout-box gesture">Gesture<br>200px</div>
+                            <div class="layout-box" style="flex: 2"></div>
+                            <div class="layout-box video">Video<br>240x180</div>
+                        </div>
+                        <div class="layout-row" style="height: 80px">
+                            <div class="layout-box">3D Scene</div>
+                        </div>
+                        <div class="layout-row">
+                            <div class="layout-box info">Info (12px)</div>
+                            <div class="layout-box" style="flex: 2"></div>
+                            <div class="layout-box">Controls</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="features-list">
+                <li>Compact UI</li>
+                <li>Gesture status: 13px font, 200px width</li>
+                <li>Video canvas: 240x180px</li>
+                <li>Reduced padding (12px)</li>
+                <li>Smaller info text (12px)</li>
+            </ul>
+
+            <button class="test-button" onclick="openAtWidth(1024)">Test Tablet View</button>
+        </div>
+
+        <!-- Mobile -->
+        <div class="breakpoint-card">
+            <div class="breakpoint-title">
+                <span class="icon">📱</span>
+                Mobile
+            </div>
+            <div class="breakpoint-width">≤ 768px</div>
+
+            <div class="preview-frame">
+                <div class="preview-content">
+                    <div class="layout-preview">
+                        <div class="layout-row">
+                            <div class="layout-box" style="flex: 2"></div>
+                            <div class="layout-box video">Video<br>200x150</div>
+                        </div>
+                        <div class="layout-row" style="height: 70px">
+                            <div class="layout-box">3D Scene</div>
+                        </div>
+                        <div class="layout-row">
+                            <div class="layout-box gesture">Gesture Panel (Bottom)<br>Full Width</div>
+                        </div>
+                        <div class="layout-row">
+                            <div class="layout-box info">Info</div>
+                            <div class="layout-box">Controls</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="features-list">
+                <li>Mobile layout - gesture panel moves to bottom</li>
+                <li>Gesture status: 12px font, full width</li>
+                <li>Video canvas: 200x150px</li>
+                <li>Smaller buttons (8px padding)</li>
+                <li>Optimized for touch</li>
+            </ul>
+
+            <button class="test-button" onclick="openAtWidth(768)">Test Mobile View</button>
+        </div>
+
+        <!-- Small Mobile -->
+        <div class="breakpoint-card">
+            <div class="breakpoint-title">
+                <span class="icon">📱</span>
+                Small Mobile
+            </div>
+            <div class="breakpoint-width">≤ 480px</div>
+
+            <div class="preview-frame">
+                <div class="preview-content">
+                    <div class="layout-preview">
+                        <div class="layout-row" style="height: 80px">
+                            <div class="layout-box">3D Scene (Full Width)</div>
+                        </div>
+                        <div class="layout-row">
+                            <div class="layout-box gesture">Gesture Panel<br>10px font</div>
+                        </div>
+                        <div class="layout-row">
+                            <div class="layout-box info">Info (10px)</div>
+                            <div class="layout-box">Controls (11px)</div>
+                        </div>
+                    </div>
+                    <div class="ui-element video-feed hidden">
+                        📹 Video Feed (Hidden)
+                    </div>
+                </div>
+            </div>
+
+            <ul class="features-list">
+                <li>Minimal mobile view</li>
+                <li>Video feed HIDDEN (saves resources)</li>
+                <li>Gesture status: 10px font</li>
+                <li>Compact buttons (6px padding, 11px font)</li>
+                <li>Maximum touch targets</li>
+            </ul>
+
+            <button class="test-button" onclick="openAtWidth(480)">Test Small Mobile View</button>
+        </div>
+
+        <!-- Landscape -->
+        <div class="breakpoint-card">
+            <div class="breakpoint-title">
+                <span class="icon">🔄</span>
+                Landscape
+            </div>
+            <div class="breakpoint-width">Height ≤ 600px</div>
+
+            <div class="preview-frame">
+                <div class="preview-content">
+                    <div class="layout-preview">
+                        <div class="layout-row">
+                            <div class="layout-box gesture" style="max-width: 180px">Gesture<br>180px max<br>11px</div>
+                            <div class="layout-box" style="flex: 2">3D Scene</div>
+                            <div class="layout-box video">Video<br>160x120</div>
+                        </div>
+                        <div class="layout-row">
+                            <div class="layout-box info">Info (10px)</div>
+                            <div class="layout-box" style="flex: 2"></div>
+                            <div class="layout-box">Controls</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="features-list">
+                <li>Optimized for wide, short screens</li>
+                <li>Gesture panel: max 180px width</li>
+                <li>Video canvas: 160x120px</li>
+                <li>Compact vertical layout</li>
+                <li>11px font size</li>
+            </ul>
+
+            <button class="test-button"
+                onclick="alert('Rotate your device to landscape mode or resize browser window to be wide but short (height < 600px)')">Test
+                Landscape View</button>
+        </div>
+    </div>
+
+    <script>
+        function openAtWidth(width) {
+            const url = 'file:///C:/Users/Administrator/.gemini/antigravity/scratch/2025-12-04/project/index.html';
+            const height = 800;
+            const left = (screen.width - width) / 2;
+            const top = (screen.height - height) / 2;
+
+            window.open(
+                url,
+                'ResponsiveTest',
+                `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+            );
+        }
+    </script>
+</body>
+
+</html>

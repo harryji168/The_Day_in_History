@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive 3D Scene - Gesture Control</title>
+    <!-- MediaPipe Hands -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-image: url('./background.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            width: 100vw;
+            font-family: 'Inter', sans-serif;
+        }
+
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #00ff44;
+            z-index: 2;
+            font-size: 14px;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #00ff44;
+        }
+
+        #videoContainer {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 3;
+            border: 2px solid #00ff44;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 255, 68, 0.5);
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+        }
+
+        #videoCanvas {
+            display: block;
+            width: 320px;
+            height: 240px;
+            transform: scaleX(-1);
+        }
+
+        #gestureStatus {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 2;
+            color: #00aaff;
+            font-size: 16px;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #00aaff;
+            min-width: 250px;
+        }
+
+        #gestureStatus h3 {
+            margin: 0 0 10px 0;
+            color: #00ff44;
+            font-size: 18px;
+        }
+
+        #gestureStatus .gesture-item {
+            margin: 5px 0;
+            padding: 5px;
+            background: rgba(0, 170, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        #gestureStatus .active {
+            background: rgba(0, 255, 68, 0.3);
+            font-weight: bold;
+        }
+
+        #controlPanel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 2;
+            pointer-events: all;
+        }
+
+        #controlPanel button {
+            background: rgba(0, 170, 255, 0.8);
+            color: white;
+            border: 2px solid #00aaff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        #controlPanel button:hover {
+            background: rgba(0, 255, 68, 0.8);
+            border-color: #00ff44;
+            box-shadow: 0 0 15px rgba(0, 255, 68, 0.5);
+        }
+
+        #controlPanel button.active {
+            background: rgba(0, 255, 68, 0.9);
+            border-color: #00ff44;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div id="info">
+        <strong>Interactive 3D Scene</strong><br>
+        Left: DNA Helix • Center: Tech Bust • Right: Running Cheetah<br>
+        <strong>Click & Drag a model</strong> to rotate it individually.<br>
+        Drag background to rotate camera.
+    </div>
+
+    <div id="gestureStatus">
+        <h3>🖐️ Gesture Controls</h3>
+        <div class="gesture-item" id="gesture-pinch">👌 Pinch: Rotate Model</div>
+        <div class="gesture-item" id="gesture-fist">✊ Fist: Zoom Camera</div>
+        <div class="gesture-item" id="gesture-peace">✌️ Peace: Switch Model</div>
+        <div class="gesture-item" id="gesture-open">🖐️ Open Hand: Reset View</div>
+        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #00aaff;">
+            <strong>Current:</strong> <span id="currentGesture">None</span><br>
+            <strong>Target:</strong> <span id="targetModel">Tech Bust</span>
+        </div>
+    </div>
+
+    <div id="videoContainer">
+        <canvas id="videoCanvas"></canvas>
+    </div>
+
+    <div id="controlPanel">
+        <button id="toggleGesture">Enable Gesture Control</button>
+    </div>
+
+    <video id="videoInput" style="display: none;"></video>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- Scene Setup ---
+        const scene = new THREE.Scene();
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 2, 12);
+
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        // --- Controls ---
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = false;
+
+        // --- Lighting ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const mainLight = new THREE.DirectionalLight(0xffffff, 2);
+        mainLight.position.set(5, 10, 7);
+        scene.add(mainLight);
+
+        const sideLight = new THREE.PointLight(0x00aaff, 1, 50);
+        sideLight.position.set(-5, -2, 5);
+        scene.add(sideLight);
+
+        // --- Shared Materials ---
+        const neonGreenMat = new THREE.MeshStandardMaterial({
+            color: 0x00ff44, wireframe: true, emissive: 0x002200, roughness: 0.2, metalness: 0.8
+        });
+        const neonBlueMat = new THREE.MeshStandardMaterial({
+            color: 0x00aaff, wireframe: true, emissive: 0x000044, roughness: 0.2, metalness: 0.8
+        });
+
+        // --- INTERACTION LIST ---
+        const interactables = [];
+
+        // --- MODEL 1: Tech Bust (Center) ---
+        const bustGroup = new THREE.Group();
+        bustGroup.userData = { name: "Tech Bust", isRotatable: true };
+        scene.add(bustGroup);
+        interactables.push(bustGroup);
+
+        const head = new THREE.Mesh(new THREE.IcosahedronGeometry(1.2, 1), neonGreenMat);
+        head.position.y = 0.5;
+        bustGroup.add(head);
+
+        const shoulders = new THREE.Mesh(new THREE.TorusGeometry(1.0, 0.3, 16, 50, Math.PI), neonGreenMat);
+        shoulders.rotation.x = Math.PI;
+        shoulders.position.y = -1.0;
+        bustGroup.add(shoulders);
+
+        const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.6, 0), new THREE.MeshBasicMaterial({ color: 0xccffcc, transparent: true, opacity: 0.5 }));
+        core.position.y = 0.5;
+        bustGroup.add(core);
+
+        bustGroup.position.set(0, 0, 0);
+
+        // --- MODEL 2: DNA Helix (Left) ---
+        const dnaGroup = new THREE.Group();
+        dnaGroup.userData = { name: "DNA", isRotatable: true };
+        scene.add(dnaGroup);
+        interactables.push(dnaGroup);
+
+        const strandCount = 20;
+        const radius = 0.8;
+        const height = 4;
+
+        for (let i = 0; i < strandCount; i++) {
+            const y = (i / strandCount) * height - (height / 2);
+            const angle = (i / strandCount) * Math.PI * 4;
+
+            const p1 = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), neonBlueMat);
+            p1.position.set(Math.cos(angle) * radius, y, Math.sin(angle) * radius);
+            dnaGroup.add(p1);
+
+            const p2 = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), neonBlueMat);
+            p2.position.set(Math.cos(angle + Math.PI) * radius, y, Math.sin(angle + Math.PI) * radius);
+            dnaGroup.add(p2);
+
+            const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, radius * 2, 4), neonBlueMat);
+            bar.rotation.z = Math.PI / 2;
+            bar.rotation.y = angle;
+            bar.position.y = y;
+            dnaGroup.add(bar);
+        }
+
+        dnaGroup.position.set(-4, 0, 0);
+        dnaGroup.rotation.z = Math.PI / 6;
+
+        // --- MODEL 3: Running Cheetah (Right) ---
+        const cheetahGroup = new THREE.Group();
+        cheetahGroup.userData = { name: "Cheetah", isRotatable: true };
+        scene.add(cheetahGroup);
+        interactables.push(cheetahGroup);
+
+        // Cheetah Materials - REALISTIC TEXTURE
+        function createCheetahTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 2048;
+            canvas.height = 2048;
+            const ctx = canvas.getContext('2d');
+
+            const gradient = ctx.createRadialGradient(1024, 1024, 200, 1024, 1024, 1400);
+            gradient.addColorStop(0, '#F5DEB3');
+            gradient.addColorStop(0.4, '#E8C17A');
+            gradient.addColorStop(1, '#D4A76A');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 2048, 2048);
+
+            ctx.globalAlpha = 0.08;
+            for (let i = 0; i < 80000; i++) {
+                const brightness = Math.random();
+                ctx.fillStyle = brightness > 0.5 ? '#FFFFFF' : '#C8A868';
+                ctx.fillRect(Math.random() * 2048, Math.random() * 2048, 1, 1);
+            }
+            ctx.globalAlpha = 1.0;
+
+            const spots = [];
+            const minDistance = 35;
+            const maxAttempts = 5000;
+
+            for (let attempt = 0; attempt < maxAttempts && spots.length < 450; attempt++) {
+                const x = Math.random() * 2048;
+                const y = Math.random() * 2048;
+
+                let tooClose = false;
+                for (const spot of spots) {
+                    const dx = x - spot.x;
+                    const dy = y - spot.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < minDistance) {
+                        tooClose = true;
+                        break;
+                    }
+                }
+
+                if (!tooClose) {
+                    const radius = 12 + Math.random() * 8;
+                    spots.push({ x, y, radius });
+                }
+            }
+
+            ctx.fillStyle = '#000000';
+            ctx.globalAlpha = 0.95;
+
+            for (const spot of spots) {
+                ctx.beginPath();
+
+                const irregularity = 0.15;
+                const points = 16;
+
+                for (let i = 0; i <= points; i++) {
+                    const angle = (i / points) * Math.PI * 2;
+                    const radiusVariation = 1 + (Math.random() - 0.5) * irregularity;
+                    const r = spot.radius * radiusVariation;
+                    const px = spot.x + Math.cos(angle) * r;
+                    const py = spot.y + Math.sin(angle) * r;
+
+                    if (i === 0) {
+                        ctx.moveTo(px, py);
+                    } else {
+                        ctx.lineTo(px, py);
+                    }
+                }
+
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            ctx.globalAlpha = 1.0;
+
+            ctx.fillStyle = '#1a1a1a';
+            ctx.globalAlpha = 0.7;
+            for (let i = 0; i < 100; i++) {
+                const x = Math.random() * 2048;
+                const y = Math.random() * 2048;
+                const radius = 4 + Math.random() * 4;
+
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1.0;
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        const cheetahTexture = createCheetahTexture();
+        cheetahTexture.wrapS = THREE.RepeatWrapping;
+        cheetahTexture.wrapT = THREE.RepeatWrapping;
+        cheetahTexture.repeat.set(2, 2);
+
+        const cheetahMat = new THREE.MeshStandardMaterial({
+            map: cheetahTexture,
+            color: 0xffffff,
+            roughness: 0.7,
+            metalness: 0.1,
+            wireframe: false
+        });
+
+        const cheetahBody = new THREE.Group();
+        cheetahGroup.add(cheetahBody);
+
+        const torsoGeo = new THREE.CapsuleGeometry(0.3, 1.2, 4, 8);
+        const torso = new THREE.Mesh(torsoGeo, cheetahMat);
+        torso.rotation.z = Math.PI / 2;
+        cheetahBody.add(torso);
+
+        const neckGroup = new THREE.Group();
+        neckGroup.position.set(0.7, 0.2, 0);
+        cheetahBody.add(neckGroup);
+
+        const neck = new THREE.Mesh(new THREE.CapsuleGeometry(0.12, 0.5, 4, 8), cheetahMat);
+        neck.rotation.z = -Math.PI / 4;
+        neck.position.set(0.2, 0.2, 0);
+        neckGroup.add(neck);
+
+        const headGroup = new THREE.Group();
+        headGroup.position.set(0.5, 0.4, 0);
+        neckGroup.add(headGroup);
+
+        const skull = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), cheetahMat);
+        headGroup.add(skull);
+
+        const snout = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.15, 0.2, 8), cheetahMat);
+        snout.rotation.z = -Math.PI / 2;
+        snout.position.set(0.15, -0.05, 0);
+        headGroup.add(snout);
+
+        const earGeo = new THREE.ConeGeometry(0.05, 0.1, 4);
+        const earL = new THREE.Mesh(earGeo, cheetahMat);
+        earL.position.set(0, 0.15, 0.1);
+        earL.rotation.z = -0.5;
+        headGroup.add(earL);
+
+        const earR = new THREE.Mesh(earGeo, cheetahMat);
+        earR.position.set(0, 0.15, -0.1);
+        earR.rotation.z = -0.5;
+        headGroup.add(earR);
+
+        const tailGroup = new THREE.Group();
+        tailGroup.position.set(-0.7, 0.1, 0);
+        cheetahBody.add(tailGroup);
+
+        const tailGeo = new THREE.CapsuleGeometry(0.06, 0.8, 4, 8);
+        const tail1 = new THREE.Mesh(tailGeo, cheetahMat);
+        tail1.rotation.z = Math.PI / 2.5;
+        tail1.position.set(-0.3, 0.1, 0);
+        tailGroup.add(tail1);
+
+        const upperLegLen = 0.5;
+        const lowerLegLen = 0.5;
+
+        function createLeg(isFront) {
+            const group = new THREE.Group();
+
+            const upperGeo = new THREE.CapsuleGeometry(0.1, upperLegLen, 4, 8);
+            const upper = new THREE.Mesh(upperGeo, cheetahMat);
+            upper.position.y = -upperLegLen / 2;
+            group.add(upper);
+
+            const lowerGroup = new THREE.Group();
+            lowerGroup.position.y = -upperLegLen;
+            group.add(lowerGroup);
+
+            const lowerGeo = new THREE.CapsuleGeometry(0.08, lowerLegLen, 4, 8);
+            const lower = new THREE.Mesh(lowerGeo, cheetahMat);
+            lower.position.y = -lowerLegLen / 2;
+            lowerGroup.add(lower);
+
+            const paw = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.08, 0.12), cheetahMat);
+            paw.position.y = -lowerLegLen / 2 - 0.05;
+            paw.position.x = 0.05;
+            lower.add(paw);
+
+            return { group, upper, lowerGroup, isFront };
+        }
+
+        const legs = {
+            FR: createLeg(true), FL: createLeg(true),
+            BR: createLeg(false), BL: createLeg(false)
+        };
+
+        cheetahBody.add(legs.FR.group); legs.FR.group.position.set(0.5, -0.1, 0.2);
+        cheetahBody.add(legs.FL.group); legs.FL.group.position.set(0.5, -0.1, -0.2);
+        cheetahBody.add(legs.BR.group); legs.BR.group.position.set(-0.5, -0.1, 0.2);
+        cheetahBody.add(legs.BL.group); legs.BL.group.position.set(-0.5, -0.1, -0.2);
+
+        cheetahGroup.position.set(4, 0, 0);
+        cheetahGroup.scale.setScalar(2.5);
+
+        // --- GESTURE CONTROL SYSTEM ---
+        let gestureEnabled = false;
+        let hands, cameraInstance;
+        const videoElement = document.getElementById('videoInput');
+        const canvasElement = document.getElementById('videoCanvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const videoContainer = document.getElementById('videoContainer');
+        const toggleButton = document.getElementById('toggleGesture');
+
+        let currentTargetIndex = 1; // Start with Tech Bust
+        let previousHandPosition = null;
+        let lastGesture = 'none';
+
+        function calculateDistance(point1, point2) {
+            const dx = point1.x - point2.x;
+            const dy = point1.y - point2.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        function detectGesture(landmarks) {
+            const thumb_tip = landmarks[4];
+            const index_tip = landmarks[8];
+            const middle_tip = landmarks[12];
+            const ring_tip = landmarks[16];
+            const pinky_tip = landmarks[20];
+            const wrist = landmarks[0];
+
+            const pinchDist = calculateDistance(thumb_tip, index_tip);
+            const peaceDist = calculateDistance(index_tip, middle_tip);
+
+            // Pinch gesture
+            if (pinchDist < 0.05) {
+                return 'pinch';
+            }
+
+            // Peace sign
+            if (peaceDist > 0.1 && calculateDistance(middle_tip, ring_tip) > 0.1) {
+                const ringClose = calculateDistance(ring_tip, wrist) < calculateDistance(index_tip, wrist);
+                if (ringClose) {
+                    return 'peace';
+                }
+            }
+
+            // Fist
+            const avgFingerDist = (
+                calculateDistance(index_tip, wrist) +
+                calculateDistance(middle_tip, wrist) +
+                calculateDistance(ring_tip, wrist) +
+                calculateDistance(pinky_tip, wrist)
+            ) / 4;
+
+            if (avgFingerDist < 0.15) {
+                return 'fist';
+            }
+
+            // Open hand
+            if (avgFingerDist > 0.25) {
+                return 'open';
+            }
+
+            return 'none';
+        }
+
+        function onResults(results) {
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                for (const landmarks of results.multiHandLandmarks) {
+                    window.drawConnectors(canvasCtx, landmarks, window.HAND_CONNECTIONS, { color: '#00FF44', lineWidth: 2 });
+                    window.drawLandmarks(canvasCtx, landmarks, { color: '#00AAFF', lineWidth: 1, radius: 3 });
+
+                    const gesture = detectGesture(landmarks);
+                    updateGestureUI(gesture);
+
+                    const currentTarget = interactables[currentTargetIndex];
+                    const handPos = landmarks[9]; // Middle of hand
+
+                    if (gesture === 'pinch' && previousHandPosition) {
+                        const deltaX = (handPos.x - previousHandPosition.x) * 5;
+                        const deltaY = (handPos.y - previousHandPosition.y) * 5;
+                        currentTarget.rotation.y += deltaX;
+                        currentTarget.rotation.x += deltaY;
+                    } else if (gesture === 'fist' && previousHandPosition) {
+                        const deltaY = (handPos.y - previousHandPosition.y) * 10;
+                        camera.position.z += deltaY;
+                    } else if (gesture === 'peace' && lastGesture !== 'peace') {
+                        currentTargetIndex = (currentTargetIndex + 1) % interactables.length;
+                        document.getElementById('targetModel').textContent = interactables[currentTargetIndex].userData.name;
+                    } else if (gesture === 'open' && lastGesture !== 'open') {
+                        camera.position.set(0, 2, 12);
+                        camera.lookAt(0, 0, 0);
+                        controls.reset();
+                    }
+
+                    previousHandPosition = { x: handPos.x, y: handPos.y };
+                    lastGesture = gesture;
+                }
+            }
+
+            canvasCtx.restore();
+        }
+
+        function updateGestureUI(gesture) {
+            document.querySelectorAll('.gesture-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('currentGesture').textContent = gesture.charAt(0).toUpperCase() + gesture.slice(1);
+
+            if (gesture !== 'none') {
+                const gestureEl = document.getElementById(`gesture-${gesture}`);
+                if (gestureEl) gestureEl.classList.add('active');
+            }
+        }
+
+        toggleButton.addEventListener('click', async () => {
+            gestureEnabled = !gestureEnabled;
+
+            if (gestureEnabled) {
+                toggleButton.textContent = 'Disable Gesture Control';
+                toggleButton.classList.add('active');
+                videoContainer.style.display = 'block';
+
+                if (!hands) {
+                    hands = new window.Hands({
+                        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+                    });
+
+                    hands.setOptions({
+                        maxNumHands: 1,
+                        modelComplexity: 1,
+                        minDetectionConfidence: 0.5,
+                        minTrackingConfidence: 0.5
+                    });
+
+                    hands.onResults(onResults);
+
+                    cameraInstance = new window.Camera(videoElement, {
+                        onFrame: async () => {
+                            await hands.send({ image: videoElement });
+                        },
+                        width: 640,
+                        height: 480
+                    });
+
+                    cameraInstance.start();
+                }
+            } else {
+                toggleButton.textContent = 'Enable Gesture Control';
+                toggleButton.classList.remove('active');
+                videoContainer.style.display = 'none';
+                if (cameraInstance) {
+                    cameraInstance.stop();
+                }
+            }
+        });
+
+        // --- MOUSE INTERACTION ---
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let activeObject = null;
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+
+        function getIntersects(event, objects) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            return raycaster.intersectObjects(objects, true);
+        }
+
+        function getInteractableGroup(mesh) {
+            let current = mesh;
+            while (current) {
+                if (interactables.includes(current)) return current;
+                current = current.parent;
+            }
+            return null;
+        }
+
+        window.addEventListener('pointerdown', (event) => {
+            const intersects = getIntersects(event, interactables);
+            if (intersects.length > 0) {
+                const group = getInteractableGroup(intersects[0].object);
+                if (group) {
+                    activeObject = group;
+                    isDragging = true;
+                    controls.enabled = false;
+                    previousMousePosition = { x: event.clientX, y: event.clientY };
+                    document.body.style.cursor = 'grabbing';
+                }
+            }
+        });
+
+        window.addEventListener('pointermove', (event) => {
+            if (!isDragging) {
+                const intersects = getIntersects(event, interactables);
+                if (intersects.length > 0) {
+                    document.body.style.cursor = 'grab';
+                } else {
+                    document.body.style.cursor = 'default';
+                }
+            }
+
+            if (isDragging && activeObject) {
+                const deltaMove = {
+                    x: event.clientX - previousMousePosition.x,
+                    y: event.clientY - previousMousePosition.y
+                };
+
+                const rotateSpeed = 0.01;
+                activeObject.rotation.y += deltaMove.x * rotateSpeed;
+                activeObject.rotation.x += deltaMove.y * rotateSpeed;
+
+                previousMousePosition = { x: event.clientX, y: event.clientY };
+            }
+        });
+
+        window.addEventListener('pointerup', () => {
+            isDragging = false;
+            activeObject = null;
+            controls.enabled = true;
+            document.body.style.cursor = 'default';
+        });
+
+        // --- Animation Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+
+            const time = Date.now() * 0.001;
+
+            if (activeObject !== bustGroup) {
+                bustGroup.rotation.y += Math.sin(time * 0.5) * 0.002;
+            }
+            core.scale.setScalar(1 + Math.sin(time * 3) * 0.1);
+
+            if (activeObject !== dnaGroup) {
+                dnaGroup.rotation.y += 0.01;
+            }
+
+            const runSpeed = 1.5;
+            const t = time * runSpeed;
+
+            const spineFlex = Math.sin(t);
+            torso.position.y = Math.sin(t * 2) * 0.1;
+
+            neckGroup.rotation.z = -spineFlex * 0.15;
+            neckGroup.position.y = 0.2 + Math.sin(t * 2 + Math.PI) * 0.05;
+
+            tailGroup.rotation.z = Math.sin(t + Math.PI) * 0.5;
+
+            function animateLeg(leg, offset) {
+                const lt = t + offset;
+                const hipAngle = Math.sin(lt) * 0.9;
+                leg.group.rotation.z = hipAngle;
+
+                const isMovingForward = Math.cos(lt) > 0;
+                let kneeAngle = 0;
+
+                if (leg.isFront) {
+                    kneeAngle = isMovingForward ? -1.8 * Math.abs(Math.cos(lt)) : -0.1;
+                } else {
+                    kneeAngle = isMovingForward ? 1.8 * Math.abs(Math.cos(lt)) : 0.1;
+                }
+
+                leg.lowerGroup.rotation.z = kneeAngle;
+            }
+
+            animateLeg(legs.FR, 0);
+            animateLeg(legs.FL, 0.4);
+            animateLeg(legs.BR, Math.PI);
+            animateLeg(legs.BL, Math.PI + 0.4);
+
+            cheetahBody.rotation.z = Math.sin(t) * 0.15;
+            cheetahBody.position.y = Math.sin(t * 2) * 0.15;
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+
+</html>
