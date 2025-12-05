@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2025年12月5日 - 每日一历</title>
+  <link rel="stylesheet" href="./style.css" />
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700&family=Zcool+XiaoWei&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+  <div id="app">
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Fixed Video Logo -->
+    <video id="logo-video" src="./assets/venus_card.mp4" autoplay loop muted playsinline></video>
+
+    <main class="content-overlay">
+      <header class="main-header">
+        <h1 class="date-title">2025.12.05</h1>
+        <h2 class="sub-title">星期五 · 金曜日 · 维纳斯</h2>
+        <p class="theme-tag">Dream Maker & Tech Pioneer</p>
+      </header>
+
+      <div class="cards-container">
+        <!-- Happy News: Walt Disney -->
+        <div class="card glass-card" id="card-disney">
+          <div class="card-icon">
+            <img src="./assets/disney_castle_3d_cartoon_1764961191831.png" alt="Disney Castle" />
+            <video class="card-video" src="./assets/dysney.mp4" loop muted playsinline></video>
+          </div>
+          <div class="card-content">
+            <h3>🎉 今日开心新闻</h3>
+            <h4>造梦大师沃尔特·迪士尼诞辰 (1901)</h4>
+            <p>著名的电影制片人、动画师和迪士尼乐园的创始人。他一手缔造了米老鼠、唐老鸭等经典形象，创建了“地球上最快乐的地方”。</p>
+          </div>
+        </div>
+
+        <!-- Musician: Little Richard -->
+        <div class="card glass-card" id="card-music">
+          <div class="card-icon">
+            <img src="./assets/little_richard_piano_3d_cartoon_1764961204388.png" alt="Rock Piano" />
+            <video class="card-video" src="./assets/venus_card.mp4" loop muted playsinline></video>
+          </div>
+          <div class="card-content">
+            <h3>🎵 音乐家寿星</h3>
+            <h4>摇滚先驱小理查德 (1932)</h4>
+            <p>摇滚乐的奠基人之一，以爆发力的嗓音和钢琴演奏闻名，被誉为“摇滚乐的建筑师”。代表作《Tutti Frutti》。</p>
+          </div>
+        </div>
+
+        <!-- Technician: Peter Norvig -->
+        <div class="card glass-card" id="card-tech">
+          <div class="card-icon">
+            <img src="./assets/peter_norvig_ai_brain_3d_cartoon_1764961217219.png" alt="AI Brain" />
+            <video class="card-video" src="./assets/venus_card.mp4" loop muted playsinline></video>
+          </div>
+          <div class="card-content">
+            <h3>👨‍💻 技术专家寿星</h3>
+            <h4>人工智能专家彼得·诺维格 (1956)</h4>
+            <p>AI领域权威专家，前Google研究总监。合著的《人工智能：一种现代方法》是全球最受欢迎的AI教科书。</p>
+          </div>
+        </div>
+
+        <!-- IT History: ARPANET -->
+        <div class="card glass-card" id="card-history">
+          <div class="card-icon">
+            <img src="./assets/arpanet_computer_3d_cartoon_1764961230050.png" alt="ARPANET Computer" />
+            <video class="card-video" src="./assets/venus_card.mp4" loop muted playsinline></video>
+          </div>
+          <div class="card-content">
+            <h3>🌐 IT历史事件</h3>
+            <h4>互联网雏形 ARPANET 四节点互联 (1969)</h4>
+            <p>ARPANET成功连接初始四个节点 (UCLA, SRI, UCSB, Utah)，标志着分组交换网络建成，为互联网诞生奠定基础。</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="./main.js"></script>
+</body>
+
+</html>

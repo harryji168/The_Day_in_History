@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive 3D Daily Digest</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+                "@mediapipe/tasks-vision": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/+esm"
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div id="ui-container">
+        <div class="header-group">
+            <h1>Daily Digest</h1>
+            <h2>2025-12-03</h2>
+        </div>
+
+        <div id="controls-area">
+            <button id="btn-gesture">Enable Gesture Control</button>
+            <div id="loading">Loading 3D Experience...</div>
+        </div>
+
+        <div id="info-panel" class="hidden">
+            <h3 id="info-title">Title</h3>
+            <p id="info-desc">Description</p>
+            <button id="close-info">Close</button>
+        </div>
+
+        <div id="cam-preview" class="hidden">
+            <video id="webcam" autoplay playsinline></video>
+            <div class="cam-overlay">Gesture Active</div>
+        </div>
+
+        <div id="gesture-guide">
+            <div class="guide-item">
+                <span class="guide-icon">👆</span>
+                <span>Point to Move</span>
+            </div>
+            <div class="guide-item">
+                <span class="guide-icon">👌</span>
+                <span>Pinch to Click</span>
+            </div>
+            <div class="guide-item">
+                <span class="guide-icon">✊</span>
+                <span>Fist to Rotate</span>
+            </div>
+            <div class="guide-item">
+                <span class="guide-icon">✌️</span>
+                <span>Victory to Explode</span>
+            </div>
+        </div>
+    </div>
+    <div id="virtual-cursor"></div>
+    </div>
+    <canvas id="bg"></canvas>
+    <script type="module" src="main.js"></script>
+</body>
+
+</html>

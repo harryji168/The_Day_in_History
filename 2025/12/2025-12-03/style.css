@@ -1,0 +1,243 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400&display=swap');
+
+:root {
+    --gold: #c0a062;
+    --dark: #0f0f1a;
+    --glass: rgba(15, 15, 26, 0.7);
+    --text: #f0e6d2;
+}
+
+body,
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--dark);
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    cursor: none;
+    /* Hide default cursor when using gesture? Maybe just rely on JS */
+}
+
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+#ui-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    pointer-events: none;
+    /* Let clicks pass through to canvas */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 2rem;
+    box-sizing: border-box;
+}
+
+.header-group {
+    pointer-events: none;
+}
+
+h1,
+h2,
+h3 {
+    font-family: 'Cinzel', serif;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+h1 {
+    font-size: 3rem;
+    color: var(--gold);
+    letter-spacing: 2px;
+}
+
+h2 {
+    font-size: 1.5rem;
+    opacity: 0.8;
+}
+
+#controls-area {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1rem;
+    pointer-events: auto;
+}
+
+#loading {
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.5;
+    }
+}
+
+#info-panel {
+    position: absolute;
+    bottom: 2rem;
+    right: 2rem;
+    width: 300px;
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--gold);
+    padding: 1.5rem;
+    border-radius: 8px;
+    pointer-events: auto;
+    /* Enable clicks on panel */
+    transform: translateY(0);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+#info-panel.hidden {
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+}
+
+#info-title {
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+}
+
+#info-desc {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+button {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    transition: all 0.2s;
+    pointer-events: auto;
+}
+
+button:hover {
+    background: var(--gold);
+    color: var(--dark);
+}
+
+#cam-preview {
+    position: absolute;
+    bottom: 2rem;
+    left: 2rem;
+    width: 200px;
+    height: 150px;
+    border: 1px solid var(--gold);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000;
+    pointer-events: auto;
+}
+
+#cam-preview.hidden {
+    display: none;
+}
+
+#webcam {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+    /* Mirror the video */
+}
+
+.cam-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    color: var(--gold);
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 4px 0;
+}
+
+#gesture-guide {
+    position: absolute;
+    top: 50%;
+    left: 2rem;
+    transform: translateY(-50%);
+    background: var(--glass);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--gold);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+#gesture-guide.visible {
+    opacity: 1;
+}
+
+.guide-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+
+.guide-icon {
+    font-size: 1.5rem;
+}
+
+#virtual-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    background: rgba(192, 160, 98, 0.3);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    display: none;
+    /* Hidden by default */
+    transition: width 0.2s, height 0.2s, background 0.2s;
+}
+
+#virtual-cursor.active {
+    display: block;
+}
+
+#virtual-cursor.clicking {
+    background: var(--gold);
+    width: 15px;
+    height: 15px;
+}
