@@ -1,0 +1,6 @@
+name = "The_Day_in_History"
+main = "src/index.js"
+compatibility_date = "2024-12-04"
+
+[env.production]
+name = "The_Day_in_History"
