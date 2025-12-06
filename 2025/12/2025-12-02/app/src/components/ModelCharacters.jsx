@@ -164,6 +164,15 @@ export const Student = (props) => {
                 <sphereGeometry args={[0.35, 32, 32]} />
                 <meshStandardMaterial color={materials.skin} />
             </mesh>
+            {/* Eyes */}
+            <mesh position={[-0.1, 1.75, 0.3]}>
+                <sphereGeometry args={[0.05]} />
+                <meshStandardMaterial color="black" />
+            </mesh>
+            <mesh position={[0.1, 1.75, 0.3]}>
+                <sphereGeometry args={[0.05]} />
+                <meshStandardMaterial color="black" />
+            </mesh>
             {/* Hair */}
             <mesh position={[0, 1.8, -0.05]}>
                 <sphereGeometry args={[0.38, 32, 32, 0, 6.3, 0, 1.5]} />
@@ -225,6 +234,15 @@ export const Doctor = (props) => {
             <mesh position={[0, 1.6, 0]}>
                 <sphereGeometry args={[0.35, 32, 32]} />
                 <meshStandardMaterial color={materials.skin} />
+            </mesh>
+            {/* Eyes */}
+            <mesh position={[-0.1, 1.65, 0.3]}>
+                <sphereGeometry args={[0.05]} />
+                <meshStandardMaterial color="black" />
+            </mesh>
+            <mesh position={[0.1, 1.65, 0.3]}>
+                <sphereGeometry args={[0.05]} />
+                <meshStandardMaterial color="black" />
             </mesh>
             {/* Hair */}
             <mesh position={[0, 1.7, 0]}>
