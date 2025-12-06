@@ -43,6 +43,7 @@ export function Scene() {
         const handleActivity = () => {
             lastActivityRef.current = Date.now()
             if (isDemoMode) {
+                console.log("User activity detected, exiting demo mode")
                 setIsDemoMode(false)
                 setActiveItemIndex(-1)
                 // Reset camera
@@ -57,7 +58,9 @@ export function Scene() {
         window.addEventListener('keydown', handleActivity)
 
         const checkIdle = setInterval(() => {
-            if (!isDemoMode && Date.now() - lastActivityRef.current > 5000) { // 5 seconds idle
+            const idleTime = Date.now() - lastActivityRef.current
+            if (!isDemoMode && idleTime > 5000) { // 5 seconds idle
+                console.log("Idle detected, starting demo mode")
                 setIsDemoMode(true)
                 setActiveItemIndex(0)
             }
