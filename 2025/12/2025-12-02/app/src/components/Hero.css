@@ -1,0 +1,200 @@
+.hero {
+    position: relative;
+    height: 60vh;
+    /* Reduced height */
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, #fff9c4 0%, var(--color-bg-warm) 70%);
+    /* Sunburst effect */
+}
+
+/* Floating Elements Background */
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(var(--color-accent-gold) 2px, transparent 2px);
+    background-size: 40px 40px;
+    opacity: 0.2;
+}
+
+/* Walking Animations */
+.walker-container {
+    position: absolute;
+    z-index: 5;
+    animation: walkAcross 15s linear infinite;
+    /* Determine start positions roughly so they don't all start at same place time-wise */
+}
+
+.walker-body {
+    width: 150px;
+    height: auto;
+    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.2));
+    animation: walkBob 0.6s ease-in-out infinite alternate;
+}
+
+/* Specific start positions/delays */
+.walker-red {
+    top: 60%;
+    /* On the "ground" roughly */
+    animation-delay: 0s;
+    animation-duration: 20s;
+}
+
+.walker-green {
+    top: 70%;
+    animation-delay: -5s;
+    animation-duration: 25s;
+}
+
+.walker-student {
+    top: 65%;
+    animation-delay: -10s;
+    animation-duration: 22s;
+}
+
+.walker-doctor {
+    top: 55%;
+    animation-delay: -2s;
+    animation-duration: 18s;
+}
+
+/* Move from left to right, flip, move back */
+@keyframes walkAcross {
+    0% {
+        left: -10%;
+        transform: scaleX(1);
+        /* Face Right */
+    }
+
+    45% {
+        left: 110%;
+        transform: scaleX(1);
+    }
+
+    50% {
+        left: 110%;
+        transform: scaleX(-1);
+        /* Turn Left */
+    }
+
+    95% {
+        left: -10%;
+        transform: scaleX(-1);
+    }
+
+    100% {
+        left: -10%;
+        transform: scaleX(1);
+        /* Reset */
+    }
+}
+
+@keyframes walkBob {
+    0% {
+        transform: translateY(0);
+    }
+
+    100% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Background "put in directly" */
+.hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Use the generated asset path or the one copied to assets */
+    /* We expect Vite to resolve this. If problematic, we import in JS and pass as style. 
+       But easier: assuming standard Vite assets. */
+    background: url('/src/assets/bg.png') no-repeat center center;
+    background-size: cover;
+    z-index: 0;
+    opacity: 1;
+    /* Full visibility as requested */
+}
+
+.hero-content {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    /* Ensure full height so Scene3D doesn't collapse */
+    padding-top: 5rem;
+}
+
+.hero-text {
+    position: absolute;
+    bottom: 50px;
+    /* Move to bottom */
+    width: 100%;
+    text-align: center;
+    z-index: 20;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    margin-bottom: 2rem;
+    color: white;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+}
+
+.title-banner {
+    background: var(--color-accent-red);
+    color: white;
+    padding: 1rem 4rem;
+    display: inline-block;
+    border-radius: 10px;
+    box-shadow: 0 8px 0 #c62828, 0 20px 20px rgba(0, 0, 0, 0.1);
+    transform: rotate(-3deg) translateY(-20px);
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: rotate(-3deg) translateY(-20px);
+    }
+
+    50% {
+        transform: rotate(-1deg) translateY(-25px);
+    }
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: var(--color-text-brown);
+    margin-top: 1rem;
+    font-weight: 700;
+    background: white;
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.cta-btn {
+    background: var(--color-accent-green);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    margin-top: 2rem;
+    box-shadow: 0 6px 0 #388e3c, 0 15px 20px rgba(0, 0, 0, 0.15);
+    /* 3D Button */
+    transition: all 0.1s;
+}
+
+.cta-btn:active {
+    box-shadow: 0 0 0 #388e3c, 0 0 0 rgba(0, 0, 0, 0.15);
+    transform: translateY(6px);
+}
