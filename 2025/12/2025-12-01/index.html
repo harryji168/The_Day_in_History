@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Hero Showcase</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <canvas id="bg-canvas"></canvas>
+
+    <main class="container">
+        <div class="content-wrapper">
+            <h1 class="title">Future <span class="highlight">Vision</span></h1>
+            <p class="subtitle">Experience the interactive dimension.</p>
+        </div>
+
+        <div class="card-container" id="card">
+            <div class="card-content">
+                <!-- Desktop Parallax Layers -->
+                <div class="parallax-wrapper desktop-only">
+                    <div class="layer -bg"><img src="hero-bg.png" alt="Background Layer" class="parallax-layer"></div>
+                    <div class="layer -mid"><img src="hero-mid.png" alt="Mid-ground Layer" class="parallax-layer"></div>
+                    <div class="layer -fg"><img src="hero-fg.png" alt="Foreground Layer" class="parallax-layer"></div>
+                </div>
+
+                <!-- Mobile Static Image -->
+                <div class="mobile-only">
+                    <img src="hero-mobile.png" alt="Hero Mobile" class="hero-image">
+                </div>
+
+                <div class="card-overlay"></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="three-scene.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

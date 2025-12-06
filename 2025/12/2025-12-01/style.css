@@ -1,0 +1,242 @@
+:root {
+    --bg-color: #0a0a0a;
+    --text-color: #ffffff;
+    --accent-1: #00f2ff;
+    /* Cyan */
+    --accent-2: #ff00ff;
+    /* Magenta */
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --font-main: 'Outfit', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-main);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 1000px;
+}
+
+/* Background Effects */
+#bg-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+/* Main Layout */
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    z-index: 1;
+}
+
+.content-wrapper {
+    text-align: center;
+    margin-bottom: 2rem;
+    opacity: 0;
+    /* Animated in via JS */
+    transform: translateY(20px);
+    animation: fadeUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.title {
+    font-size: 4rem;
+    font-weight: 700;
+    letter-spacing: -0.05em;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+.highlight {
+    background: linear-gradient(45deg, var(--accent-1), var(--accent-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.subtitle {
+    font-size: 1.25rem;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* 3D Card */
+.card-container {
+    position: relative;
+    width: 500px;
+    /* Adjust based on image aspect ratio */
+    max-width: 90vw;
+    /* Default desktop aspect ratio */
+    aspect-ratio: 16/9;
+    transform-style: preserve-3d;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+
+.card-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 20px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+    transform-style: preserve-3d;
+    transition: transform 0.1s ease-out;
+    /* Smooth follow */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Parallax Layers */
+.desktop-only {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.mobile-only {
+    display: none;
+    width: 100%;
+    height: 100%;
+}
+
+.layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.parallax-layer {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.1s ease-out;
+    /* Scale up slightly to prevent edges showing during movement */
+    transform: scale(1.1);
+}
+
+.-fg .parallax-layer {
+    /* Ensure foreground is above background */
+    z-index: 3;
+}
+
+.-mid .parallax-layer {
+    z-index: 2;
+    /* Boost visibility of faint neon elements */
+    filter: brightness(1.5) contrast(1.2) saturate(1.2);
+    transform: scale(1.2);
+    /* Scale up slightly more to separate from center */
+}
+
+.-bg .parallax-layer {
+    z-index: 1;
+}
+
+.card-overlay {
+    z-index: 4;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+}
+
+/* Hover States */
+.card-container:hover .card-overlay {
+    opacity: 1;
+}
+
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Media Queries */
+
+/* Large Screens */
+@media (min-width: 1440px) {
+    .container {
+        gap: 3rem;
+    }
+
+    .title {
+        font-size: 6rem;
+    }
+
+    .subtitle {
+        font-size: 1.5rem;
+    }
+
+    .card-container {
+        width: 800px;
+    }
+}
+
+/* Extra Large Screens */
+@media (min-width: 1920px) {
+    .title {
+        font-size: 8rem;
+    }
+
+    .card-container {
+        width: 1000px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .title {
+        font-size: 2.5rem;
+    }
+
+    .card-container {
+        width: 90vw;
+        /* Mobile aspect ratio matching 9:16 portrait image */
+        aspect-ratio: 9/16;
+    }
+
+    .desktop-only {
+        display: none;
+    }
+
+    .mobile-only {
+        display: block;
+    }
+
+    .hero-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
