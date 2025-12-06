@@ -467,7 +467,7 @@
         <!-- Calendars Container -->
         <div class="calendars-container" id="calendarsContainer"></div>
 
-        <p class="footer-text">✨ Live previews load for first week • Scroll to load more months • Click any day to view full page</p>
+        <p class="footer-text">✨ Live previews load for current month • Scroll to load more months • Click any day to view full page</p>
     </div>
 
     <script>
@@ -518,22 +518,23 @@
                    year === today.getFullYear();
         }
 
-        function isInFirstWeek(day, month, year) {
+        function shouldLoadPreview(day, month, year) {
             const today = new Date();
-            const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
-            
-            if (!isCurrentMonth) return false;
-            
-            // Get current week's Sunday (start of week)
-            const currentWeekStart = new Date(today);
-            currentWeekStart.setDate(today.getDate() - today.getDay());
-            
-            // Get current week's Saturday (end of week)
-            const currentWeekEnd = new Date(currentWeekStart);
-            currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
+            today.setHours(0, 0, 0, 0); // Reset to start of day
             
             const dayDate = new Date(year, month, day);
-            return dayDate >= currentWeekStart && dayDate <= currentWeekEnd;
+            dayDate.setHours(0, 0, 0, 0);
+            
+            // Only load previews for days that have already passed (or today)
+            const result = dayDate <= today;
+            
+            console.log(`shouldLoadPreview for ${year}-${month+1}-${day}:`, {
+                dayDate: dayDate.toDateString(),
+                today: today.toDateString(),
+                result: result
+            });
+            
+            return result;
         }
 
         function getDayUrl(day, month, year) {
@@ -593,26 +594,46 @@
             const key = `${url}-${day}`;
             
             if (state.loadedDays.has(key)) return;
+            state.loadedDays.add(key);
 
             const container = card.querySelector('.preview-container');
             const spinner = container.querySelector('.loading-spinner');
 
-            const iframe = document.createElement('iframe');
-            iframe.className = 'preview-iframe';
-            iframe.setAttribute('scrolling', 'no');
-            iframe.src = url;
+            console.log(`Checking if day ${day} exists:`, url);
 
-            iframe.onload = () => {
-                if (spinner) spinner.style.display = 'none';
-                iframe.classList.add('loaded');
-            };
+            // First, check if the URL exists with a HEAD request
+            fetch(url, { method: 'HEAD' })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                    console.log(`Day ${day} exists, loading iframe`);
+                    
+                    // URL exists, create iframe
+                    const iframe = document.createElement('iframe');
+                    iframe.className = 'preview-iframe';
+                    iframe.setAttribute('scrolling', 'no');
+                    iframe.src = url;
 
-            iframe.onerror = () => {
-                if (spinner) spinner.style.display = 'none';
-            };
+                    iframe.onload = () => {
+                        if (spinner) spinner.style.display = 'none';
+                        iframe.classList.add('loaded');
+                        console.log(`Iframe loaded successfully for day ${day}`);
+                    };
 
-            container.appendChild(iframe);
-            state.loadedDays.add(key);
+                    iframe.onerror = () => {
+                        console.log(`Iframe error for day ${day}`);
+                        if (spinner) spinner.remove();
+                        iframe.remove();
+                    };
+
+                    container.appendChild(iframe);
+                })
+                .catch(error => {
+                    console.log(`Day ${day} doesn't exist (${error.message})`);
+                    if (spinner) spinner.remove();
+                });
         }
 
         function setupIntersectionObserver() {
@@ -624,8 +645,8 @@
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         const card = entry.target;
-                        const shouldLoadPreview = card.getAttribute('data-load-preview') === 'true';
-                        if (shouldLoadPreview && !state.isLoading) {
+                        const shouldLoad = card.getAttribute('data-load-preview') === 'true';
+                        if (shouldLoad && !state.isLoading) {
                             // Delay loading until scrolling stops
                             clearTimeout(state.scrollTimeout);
                             state.scrollTimeout = setTimeout(() => {
@@ -635,13 +656,32 @@
                     }
                 });
             }, {
-                rootMargin: '50px',
-                threshold: 0.1
+                rootMargin: '200px',
+                threshold: 0.01
             });
 
-            document.querySelectorAll('.day-card:not(.empty)').forEach(card => {
+            // Observe all non-empty day cards
+            const cardsToObserve = document.querySelectorAll('.day-card:not(.empty)');
+            console.log(`Setting up observer for ${cardsToObserve.length} day cards`);
+            
+            cardsToObserve.forEach(card => {
                 state.observer.observe(card);
             });
+            
+            // Force load for cards that are already visible
+            setTimeout(() => {
+                cardsToObserve.forEach(card => {
+                    const rect = card.getBoundingClientRect();
+                    const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+                    const shouldLoad = card.getAttribute('data-load-preview') === 'true';
+                    
+                    if (isVisible && shouldLoad) {
+                        const day = card.getAttribute('data-day');
+                        console.log(`Force loading visible day ${day}`);
+                        loadIframe(card);
+                    }
+                });
+            }, 500);
         }
 
         function renderMonth(year, month) {
@@ -675,8 +715,8 @@
 
             const days = getDaysInMonth(year, month);
             days.forEach(day => {
-                const shouldLoadPreview = day && isInFirstWeek(day, month, year);
-                const cell = createDayCell(day, month, year, shouldLoadPreview);
+                const shouldLoad = day && shouldLoadPreview(day, month, year);
+                const cell = createDayCell(day, month, year, shouldLoad);
                 daysGrid.appendChild(cell);
             });
 
